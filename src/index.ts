@@ -1,13 +1,28 @@
 import express, { Request, Response } from 'express';
+import crypto from 'crypto';
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.text()); // Pour traiter le body des requêtes en text/plain
+app.use(express.json());
 
-app.post('/api/justify', (req: Request, res: Response) => {
-    const text = req.body;
-    res.send(`Received text: ${text}`);
+const usersTokens: { [key: string]: string } = {};
+
+app.post('/api/token', (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).send('Email is required');
+  }
+
+  const token = crypto.randomBytes(16).toString('hex');
+  usersTokens[email] = token;
+  res.json({ token });
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.get('/', (req: Request, res: Response) => {
+  res.send('API Justification Ready!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
